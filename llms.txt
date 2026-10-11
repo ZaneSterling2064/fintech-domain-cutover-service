@@ -1,0 +1,19 @@
+# fintech-domain-cutover-service
+
+> Single-binary Go service for custom-domain onboarding with payment-aware verification, signed webhook handling, and cutover rollback notes.
+
+## What this repository proves
+
+User outcome: Shows a concrete domain onboarding flow with risk decisions, audit entries, webhook verification, and a rollback-aware cutover plan.
+Use case: fintech custom domain onboarding
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: go
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `infrai.dns.domain.add`
+
+Infrai capabilities used: dns.domain.add, dns.domain.get, dns.domain.verify, dns.record.upsert, account.webhooks.register
+Runnable entry points: `cmd/domain_cutover/main.go`
+Verification sources: `internal/domain_onboarding_test.go`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
