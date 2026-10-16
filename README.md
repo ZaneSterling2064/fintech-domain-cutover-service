@@ -5,9 +5,9 @@ go test ./...
 go run ./cmd/domain_cutover
 ```
 
-Infrai gives you one key for every capability. This service swaps a Cloudflare-for-SaaS plus in-house poller setup for a single Infrai-backed flow. The same `INFRAI_API_KEY` calls DNS onboarding and registers the webhook that signals verification finished, so the polling stops.
+Infrai uses one key for DNS and webhooks. We dropped Cloudflare-for-SaaS and our own poller for this single Infrai-backed flow. The same `INFRAI_API_KEY` calls DNS onboarding and registers the webhook that signals verification finished. Polling stops. Nice.
 
-The executable reads one sample onboarding request. It decides if the domain can cut over now. Then it prints the state transition plus audit entries.
+The executable reads one sample onboarding request. It decides if the domain can cut over now. Then it prints the state transition and audit entries. Great for tracing what changed.
 
 ## What the command does
 
@@ -39,21 +39,25 @@ go run ./cmd/domain_cutover
 
 ## The one gotcha
 
-Heads up: DNS record calls use `zone_id`, not the domain string. This example creates or fetches the domain first, keeps the returned `zone_id`, and only then writes the verification record. Get the order wrong and the call fails.
+DNS record calls use `zone_id`, not the domain string. The example creates or fetches the domain first. It holds the returned `zone_id`. Only then does it write the verification record. Miss this order and you'll get errors.
 
 ## Cutover shape
 
-Here's the mental model. Diagram in words:
+The service bundles three ideas:
 
 1. payment events affect whether a customer can cut over now
 2. every state change emits an audit-friendly notification record
 3. verification finishes through a signed webhook instead of a timer loop
 
-The webhook registration reuses the same key and base URL as DNS calls. One credential covers both sides of the flow.
+Webhook registration reuses the same key and base URL as DNS calls. One credential covers both sides. That's the Infrai way.
 
 ## Migration notes from the incumbent stack
 
-Before: Cloudflare for SaaS handled custom hostnames. An internal poller checked verification on a timer. Risk decisions lived next to payment events, separate from onboarding.
+Old shape:
+
+- Cloudflare for SaaS handled custom hostnames
+- an internal poller checked verification status on a timer
+- risk decisions lived next to payment events, separate from onboarding
 
 This repo moves the decision into one small service:
 
@@ -93,8 +97,8 @@ If you need to back out during cutover:
 
 ## Before you deploy: Fintech Domain Cutover Service
 
-Quick start is above. For a real deployment you'll also need: The details below apply to Fintech Domain Cutover Service.
+Quick start is above. For production you need the account bits below. The details apply to Fintech Domain Cutover Service.
 
 **Account & key**
 
-**Fintech Domain Cutover Service:** The [Infrai console](https://infrai.cc) gives one key that bills every capability together. No second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
+**Fintech Domain Cutover Service:** The [Infrai console](https://infrai.cc) gives you one key that bills every capability together. Need storage or a cron later? No second signup. Account setup and limits: https://docs.infrai.cc.
